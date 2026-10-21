@@ -1,4 +1,4 @@
-﻿# Memora
+# Memora
 
 Memora is a personal knowledge library for saving links and resources, organizing them into categories, adding notes, and exploring a collection with AI-assisted search.
 
@@ -54,7 +54,15 @@ Create a local `.env` file by copying the example:
 Copy-Item .env.example .env
 ```
 
-Open `.env` in a text editor and configure `DATABASE_URL` to point to your PostgreSQL database. Generate a unique encryption key for this installation. Keep all credentials private and never commit `.env`.
+Open `.env` in a text editor and configure `DATABASE_URL` to point to your PostgreSQL database.
+
+Generate a unique encryption key for this installation by running the following command in PowerShell:
+
+```powershell
+[Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
+```
+
+Copy the generated value into `APP_ENCRYPTION_KEY` in `.env`, replacing `REPLACE_WITH_YOUR_OWN_KEY`. Keep this key safe and consistent for this installation; changing it may prevent access to previously encrypted provider credentials. Never commit `.env` or share real credentials.
 
 Do not overwrite an existing `.env` file containing settings you want to keep.
 
