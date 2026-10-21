@@ -1,4 +1,4 @@
-# Memora
+﻿# Memora
 
 Memora is a personal knowledge library for saving links and resources, organizing them into categories, adding notes, and exploring a collection with AI-assisted search.
 
@@ -87,21 +87,30 @@ npm run build
 
 ### 7. Start Memora
 
-The default production command uses port 3000:
+Memora uses port 3000 by default. You can change the port in your `.env` file:
+
+```dotenv
+PORT=3000
+```
+
+If port 3000 is already in use, change it to an available port, for example `PORT=3001`.
+
+Build and start Memora:
 
 ```powershell
+npm run build
 npm run start
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open `http://localhost:3000`, or replace `3000` with the port you configured.
 
-To use port 3010 instead:
+You can also override the port for a single start without changing `.env`:
 
 ```powershell
 npm run start -- --port 3010
 ```
 
-Then open [http://localhost:3010](http://localhost:3010).
+Keep the terminal running while using the application. Press `Ctrl+C` to stop the server.
 
 Keep the terminal running while using the application. Press `Ctrl+C` to stop the server.
 

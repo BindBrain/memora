@@ -56,6 +56,7 @@ export async function POST(request: Request) {
     });
 
     const result = await generateDescription({
+      purpose: "search-summary",
       title: `Search overview: ${question}`,
       url: "https://memora.local/search",
       domain: "Memora search",

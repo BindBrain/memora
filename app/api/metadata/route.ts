@@ -104,19 +104,62 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const response = await fetch(url.toString(), {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; Memora/1.0; +resource-metadata)",
-        Accept: "text/html,application/xhtml+xml",
-      },
-      redirect: "manual",
-      signal: AbortSignal.timeout(10000),
-      cache: "no-store",
-    });
+    let currentUrl = url;
+    let response: Response | undefined;
 
-    if (!response.ok) {
+    for (let redirectCount = 0; redirectCount <= 5; redirectCount++) {
+      if (!isPublicWebUrl(currentUrl)) {
+        return NextResponse.json(
+          { error: "The website redirected to an unsupported address." },
+          { status: 422 }
+        );
+      }
+
+      response = await fetch(currentUrl.toString(), {
+        headers: {
+          "User-Agent": "Mozilla/5.0 (compatible; Memora/1.0; +resource-metadata)",
+          Accept: "text/html,application/xhtml+xml",
+        },
+        redirect: "manual",
+        signal: AbortSignal.timeout(10000),
+        cache: "no-store",
+      });
+
+      if (response.status < 300 || response.status >= 400) {
+        break;
+      }
+
+      const location = response.headers.get("location");
+
+      if (!location || redirectCount === 5) {
+        await response.body?.cancel().catch(() => {});
+        return NextResponse.json(
+          { error: "The website redirected too many times or provided an invalid redirect." },
+          { status: 422 }
+        );
+      }
+
+      let nextUrl: URL;
+
+      try {
+        nextUrl = new URL(location, currentUrl);
+      } catch {
+        await response.body?.cancel().catch(() => {});
+        return NextResponse.json(
+          { error: "The website provided an invalid redirect." },
+          { status: 422 }
+        );
+      }
+
+      await response.body?.cancel().catch(() => {});
+      currentUrl = nextUrl;
+    }
+
+    if (!response || !response.ok) {
       return NextResponse.json(
-        { error: `Website metadata could not be fetched (HTTP ${response.status}). You can enter the title manually.` },
+        {
+          error: `Website metadata could not be fetched (HTTP ${response?.status ?? "unknown"}). You can enter the title manually.`,
+        },
         { status: 422 }
       );
     }

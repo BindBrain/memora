@@ -13,30 +13,86 @@ import {
   Activity,
   ArrowDown,
   ArrowUp,
+  BookOpen,
   Bookmark,
   BookmarkCheck,
+  Briefcase,
+  Camera,
   Check,
   ChevronDown,
   CircleHelp,
+  Code,
+  Dumbbell,
   ExternalLink,
   FileText,
+  FlaskConical,
   Folder,
   FolderPlus,
+  Gamepad2,
   Globe,
+  GraduationCap,
   Grid2X2,
+  Heart,
   LayoutList,
+  Leaf,
+  Lightbulb,
   LoaderCircle,
   MoreHorizontal,
-  MoreVertical,
+  Music,
+  Palette,
   Pencil,
+  Plane,
   Plus,
   Search,
   Settings,
   Sparkles,
+  Star,
   Trash2,
   X,
 } from "lucide-react";
+const CATEGORY_ICON_COMPONENTS = {
+  folder: Folder,
+  book: BookOpen,
+  graduation: GraduationCap,
+  briefcase: Briefcase,
+  heart: Heart,
+  palette: Palette,
+  code: Code,
+  plane: Plane,
+  music: Music,
+  camera: Camera,
+  fitness: Dumbbell,
+  ideas: Lightbulb,
+  science: FlaskConical,
+  globe: Globe,
+  star: Star,
+  bookmark: Bookmark,
+  leaf: Leaf,
+  games: Gamepad2,
+} as const;
 
+function CategoryIconView({
+  name,
+  size,
+  color,
+}: {
+  name: string;
+  size: number;
+  color?: string;
+}) {
+  const Icon =
+    CATEGORY_ICON_COMPONENTS[
+      name as keyof typeof CATEGORY_ICON_COMPONENTS
+    ] ?? Folder;
+
+  return (
+    <Icon
+      size={size}
+      style={color ? { color } : undefined}
+      className="shrink-0"
+    />
+  );
+}
 type Category = {
   id: string;
   name: string;
@@ -211,7 +267,7 @@ export default function HomePage() {
       "A little inspiration for the rest of your day.",
       "Good ideas deserve a place to stay.",
       "Unwind, explore, and follow your curiosity.",
-      "Today’s discoveries can inspire tomorrow."
+      "Today's discoveries can inspire tomorrow."
     ];
 
     const night = [
@@ -229,7 +285,7 @@ export default function HomePage() {
         : hour >= 17 && hour < 21
           ? evening
           : night;
-
+// eslint-disable-next-line react-hooks/set-state-in-effect -- Update the time-based greeting after the initial render to avoid hydration mismatches.
     setDashboardSlogan(choices[Math.floor(Math.random() * choices.length)]);
   }, []);
   const [activeCategory, setActiveCategory] = useState("dashboard");
@@ -271,6 +327,7 @@ export default function HomePage() {
   const [categoryName, setCategoryName] = useState("");
   const [categoryDescription, setCategoryDescription] = useState("");
   const [categoryColor, setCategoryColor] = useState(DEFAULT_COLOR);
+  const [categoryIcon, setCategoryIcon] = useState("folder");
 
   const [settingsKey, setSettingsKey] = useState("");
   const [showSettingsKey, setShowSettingsKey] = useState(false);
@@ -290,7 +347,6 @@ export default function HomePage() {
   const [aiWebResults, setAiWebResults] = useState<WebSearchResult[]>([]);
   const [aiOverview, setAiOverview] = useState("");
   const [aiOverviewBusy, setAiOverviewBusy] = useState(false);
-  const [webResultMenu, setWebResultMenu] = useState<string | null>(null);
   const [generatingDescription, setGeneratingDescription] = useState(false);
   const [descriptionMessage, setDescriptionMessage] = useState("");
 
@@ -342,10 +398,12 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Fetching the library synchronizes component state with API data.
     void loadLibrary();
   }, [loadLibrary]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Reset pagination when the active filters change.
     setPage(1);
   }, [activeCategory, query, bookmarksOnly, sort]);
 
@@ -462,6 +520,7 @@ export default function HomePage() {
     setCategoryColor(DEFAULT_COLOR);
     setError("");
     setModal("category");
+    setCategoryIcon("folder");
     setShowAddMenu(false);
   }
 
@@ -469,6 +528,7 @@ export default function HomePage() {
     setEditingCategory(category.id);
     setCategoryName(category.name);
     setCategoryDescription(category.description);
+    setCategoryIcon(category.icon || "folder");
     setCategoryColor(category.color);
     setMenuId(null);
     setError("");
@@ -895,7 +955,7 @@ export default function HomePage() {
         name: categoryName.trim(),
         description: categoryDescription.trim(),
         color: categoryColor,
-        icon: "folder",
+        icon: categoryIcon,
       };
 
       const response = await fetch(
@@ -1114,7 +1174,6 @@ export default function HomePage() {
     setAiAnswer("");
     setAiSavedResults([]);
     setAiWebResults([]);
-    setWebResultMenu(null);
 
     try {
       const normalizeSearchText = (value: string) =>
@@ -1382,7 +1441,7 @@ export default function HomePage() {
                   }`}
                   title={category.name}
                 >
-                  <Folder size={18} style={{ color: category.color }} className="shrink-0" />
+                  <CategoryIconView name={category.icon} size={18} color={category.color} />
                   <span className="flex-1 truncate text-left max-md:hidden">{category.name}</span>
                   <span className="text-xs text-[#a2a1b1] max-md:hidden">
                     {resources.filter((r) => r.category === category.id).length}
@@ -1685,7 +1744,7 @@ export default function HomePage() {
                           <div className="flex min-w-0 flex-wrap items-center gap-2">
                             {category ? (
                               <button onClick={() => { setActiveCategory(category.id); setQuery(""); }} className="flex max-w-[160px] items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium" style={{ backgroundColor: `${category.color}18`, color: category.color }}>
-                                <Folder size={12} /><span className="truncate">{category.name}</span>
+                                <CategoryIconView name={category.icon} size={12} /><span className="truncate">{category.name}</span>
                               </button>
                             ) : <span className="rounded-full bg-[#f5f5f8] px-2.5 py-1 text-[11px] text-[#9998aa]">Uncategorized</span>}
                           </div>
@@ -1845,6 +1904,30 @@ export default function HomePage() {
                   <textarea rows={2} value={categoryDescription} onChange={(event) => setCategoryDescription(event.target.value)} placeholder="What belongs in this collection?" className="w-full resize-y rounded-xl border border-[#e7e6ee] px-3.5 py-3 text-sm outline-none focus:border-[#aaa7ef]" />
                 </div>
                 <div>
+                  <label className="mb-2 block text-xs font-semibold text-[#666577]">
+                    Icon
+                  </label>
+                  <div className="grid grid-cols-6 gap-2 sm:grid-cols-9">
+                    {Object.entries(CATEGORY_ICON_COMPONENTS).map(([iconName, Icon]) => (
+                      <button
+                        key={iconName}
+                        type="button"
+                        onClick={() => setCategoryIcon(iconName)}
+                        aria-label={`Select ${iconName} icon`}
+                        aria-pressed={categoryIcon === iconName}
+                        title={iconName}
+                        className={`flex h-10 items-center justify-center rounded-xl border transition ${
+                          categoryIcon === iconName
+                            ? "border-[#7774d9] bg-[#f0efff] text-[#7774d9] ring-2 ring-[#7774d9]/20"
+                            : "border-[#e7e6ee] text-[#777688] hover:border-[#aaa7ef] hover:bg-[#faf9ff]"
+                        }`}
+                      >
+                        <Icon size={18} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
                   <label className="mb-2 block text-xs font-semibold text-[#666577]">Color</label>
                   <div className="flex flex-wrap gap-3">
                     {COLORS.map((color) => (
@@ -1948,7 +2031,7 @@ export default function HomePage() {
                       </button>
                     </div>
                     <p className="text-xs leading-5 text-[#a2a1b1]">
-                      Create a key in the <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" className="font-medium text-[#7774d9] underline">Google AI Studio</a>. Review Google's current pricing and quota before use.
+                      Create a key in the <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" className="font-medium text-[#7774d9] underline">Google AI Studio</a>. Review Google&apos;s current pricing and quota before use.
                     </p>
                     <button type="submit" disabled={settingsBusy || !geminiKey.trim()} className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#7774d9] px-5 py-3 text-sm font-semibold text-white hover:bg-[#6865ca] disabled:cursor-not-allowed disabled:opacity-60">
                       {settingsBusy ? <LoaderCircle size={16} className="animate-spin" /> : <Check size={16} />}
