@@ -22,51 +22,92 @@ Memora is a personal knowledge library for saving links and resources, organizin
 
 ## Requirements
 
-- Node.js compatible with the version required by the installed Next.js release
+- Node.js compatible with the installed Next.js release
 - npm
 - PostgreSQL
-- API credentials for AI features, configured through Memora settings or the appropriate environment configuration
+- AI provider credentials for AI-assisted features
+
+## Installation on Windows
+
+### 1. Download the project
+
+Open PowerShell and run:
+
+```powershell
+git clone https://github.com/BindBrain/memora.git
+cd memora
+```
+
+If you already downloaded the project, open PowerShell in its project folder instead.
+
+### 2. Install dependencies
+
+```powershell
+npm install
+```
+
+### 3. Configure the environment
+
+Create a local `.env` file by copying the example:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Open `.env` in a text editor and configure `DATABASE_URL` to point to your PostgreSQL database. Generate a unique encryption key for this installation. Keep all credentials private and never commit `.env`.
+
+Do not overwrite an existing `.env` file containing settings you want to keep.
+
+### 4. Create the PostgreSQL database
+
+Make sure PostgreSQL is installed and running. Create a database and database user, then configure `DATABASE_URL` in `.env` to use that database.
+
+The database must exist before proceeding. Use a dedicated database for Memora and ensure the configured user has permission to create and modify tables in it.
+
+### 5. Apply migrations and generate Prisma Client
+
+```powershell
+npx prisma migrate deploy
+npx prisma generate
+```
+
+### 6. Build the production version
+
+```powershell
+npm run build
+```
+
+### 7. Start Memora
+
+The default production command uses port 3000:
+
+```powershell
+npm run start
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+To use port 3010 instead:
+
+```powershell
+npm run start -- --port 3010
+```
+
+Then open [http://localhost:3010](http://localhost:3010).
+
+Keep the terminal running while using the application. Press `Ctrl+C` to stop the server.
 
 ## Local development
 
-1. Clone the repository:
+For development with automatic recompilation, use:
 
-   ```bash
-   git clone https://github.com/BindBrain/memora.git
-   cd memora
-   ```
+```powershell
+npm run dev
+```
 
-2. Install dependencies:
+Then open [http://localhost:3000](http://localhost:3000).
 
-   ```bash
-   npm install
-   ```
-
-3. Create your local environment file by copying `.env.example` to `.env`. Update the database connection and generate your own encryption key. Never commit `.env`.
-
-4. Create a PostgreSQL database and user matching your `DATABASE_URL`.
-
-5. Apply the Prisma migrations:
-
-   ```bash
-   npx prisma migrate deploy
-   ```
-
-6. Generate the Prisma client:
-
-   ```bash
-   npx prisma generate
-   ```
-
-7. Start the development server:
-
-   ```bash
-   npm run dev
-   ```
-
-8. Open [http://localhost:3000](http://localhost:3000).
-
-If the project has no committed migrations yet, initialize a development migration with `npx prisma migrate dev --name init` after configuring your local database.
+Development mode is intended for making code changes. For normal use, build the app and run the production server instead.
 
 ## AI configuration
 
@@ -74,22 +115,23 @@ Configure supported AI provider credentials in Memora's Settings interface. Keep
 
 AI features require a working provider credential and a valid encryption key wherever provider secrets are encrypted at rest.
 
-## Production build
+## Production checks
 
-Run the following checks before deploying:
+Before publishing changes, run:
 
-```bash
+```powershell
 npx tsc --noEmit
 npm run build
 ```
 
-Set environment variables securely in your deployment platform. Do not deploy your development `.env` file.
+After changing the Prisma schema, create and test an appropriate migration before deploying the updated application.
 
 ## Security
 
 - Never commit `.env`, real API keys, database passwords, or private exports.
-- `.env.example` contains placeholders only.
+- `.env.example` must contain placeholders only.
 - Keep local backups and generated build files out of version control.
+- Use a separate database for testing.
 - Rotate any credential that is accidentally exposed.
 
 ## Contributing
