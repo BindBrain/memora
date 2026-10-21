@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id          String     @id @default(cuid())
+  name        String
+  description String     @default("")
+  color       String     @default("#8b8cf7")
+  icon        String     @default("folder")
+  position    Int        @default(0)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  resources   Resource[]
+
+  @@index([position])
+}
+
+model Resource {
+  id          String    @id @default(cuid())
+  title       String
+  url         String
+  domain      String    @default("")
+  description String    @default("")
+  note        String    @default("")
+  faviconUrl  String    @default("")
+  bookmarked  Boolean   @default(false)
+  position    Int       @default(0)
+  categoryId  String?
+  category    Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([categoryId, position])
+  @@index([bookmarked])
+  @@index([createdAt])
+}
+
+model AppSetting {
+  id        String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
